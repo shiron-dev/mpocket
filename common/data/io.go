@@ -2,7 +2,6 @@ package data
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 )
@@ -19,13 +18,16 @@ func getConfigFilePath() string {
 func GetConfig() (Config, error) {
 	configFilePath := getConfigFilePath()
 
-	jsonData, err := ioutil.ReadFile(configFilePath)
+	file, err := os.Open(configFilePath)
 	if err != nil {
 		return getDefaultConfig(), err
 	}
+	defer file.Close()
 
 	var config Config
-	if err := json.Unmarshal(jsonData, &config); err != nil {
+	decoder := json.NewDecoder(file)
+	err = decoder.Decode(&config)
+	if err != nil {
 		return getDefaultConfig(), err
 	}
 
@@ -35,12 +37,14 @@ func GetConfig() (Config, error) {
 func SetConfig(config Config) error {
 	configFilePath := getConfigFilePath()
 
-	jsonData, err := json.MarshalIndent(config, "", "  ")
+	file, err := os.Create(configFilePath)
 	if err != nil {
 		return err
 	}
+	defer file.Close()
 
-	err = ioutil.WriteFile(configFilePath, jsonData, 0644)
+	encoder := json.NewEncoder(file)
+	err = encoder.Encode(config)
 	if err != nil {
 		return err
 	}
