@@ -1,6 +1,9 @@
 package exec
 
 import (
+	"fmt"
+	"os"
+
 	"golang.org/x/sys/execabs"
 )
 
@@ -15,9 +18,25 @@ func GetCommitHash() string {
 
 func GetTag() string {
 	cmd := execabs.Command(GetCommandName(Git), "describe", "--tags", "--abbrev=0")
-	if out, err := cmd.Output(); err != nil {
+	return RunOutDef(cmd, "")
+}
+
+func Commit(message string, args ...string) {
+	cmdArgs := append([]string{"commit", "-m", message}, args...)
+	cmd := execabs.Command(GetCommandName(Git), cmdArgs...)
+	RunErr(cmd)
+}
+
+func GetGitUserData() (string, string) {
+	cmd := execabs.Command(GetCommandName(Git), "config", "user.name")
+	userName := RunOutFunc(cmd, func(_ error) string {
+		fmt.Fprintln(os.Stderr, "error: git user.name is not set")
+		os.Exit(1)
 		return ""
-	} else {
-		return string(out)
-	}
+	})
+
+	cmd = execabs.Command(GetCommandName(Git), "config", "user.email")
+	userEmail := RunOutDef(cmd, "")
+
+	return userName, userEmail
 }
