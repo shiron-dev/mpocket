@@ -21,8 +21,8 @@ func GetTag() string {
 	return RunOutDef(cmd, "")
 }
 
-func Commit(message string, args ...string) {
-	cmdArgs := append([]string{"commit", "-m", message}, args...)
+func Commit(message string, path string, args ...string) {
+	cmdArgs := append([]string{"-C", path, "commit", "-m", message}, args...)
 	cmd := execabs.Command(GetCommandName(Git), cmdArgs...)
 	RunErr(cmd)
 }
@@ -39,4 +39,13 @@ func GetGitUserData() (string, string) {
 	userEmail := RunOutDef(cmd, "")
 
 	return userName, userEmail
+}
+
+func GitInit(path string) {
+	cmd := execabs.Command(
+		GetCommandName(Git),
+		"-C", path,
+		"init",
+	)
+	RunErr(cmd)
 }

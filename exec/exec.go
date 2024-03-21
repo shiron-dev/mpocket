@@ -51,3 +51,10 @@ func RunErr(cmd *exec.Cmd) {
 		panic(err)
 	}
 }
+
+func RunFunc(cmd *exec.Cmd, f func(error)) {
+	err := cmd.Run()
+	if err != nil {
+		f(err)
+	}
+}
